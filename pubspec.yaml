@@ -34,7 +34,7 @@ dev_dependencies:
   flutter_lints: ^3.0.1
 
 dependency_overrides:
-  record_linux: 0.0.0-not-used
+  record_linux: any
 
 flutter:
   uses-material-design: true
