@@ -1,0 +1,37 @@
+name: calculator_vault
+description: "A private vault apps disguised as a calculator."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  
+  # Core Features
+  shared_preferences: ^2.2.2
+  geolocator: ^13.0.1
+  record: ^5.1.0
+  share_plus: ^10.0.0
+  path_provider: ^2.1.2
+  permission_handler: ^11.3.0
+  math_expressions: ^2.4.0
+  sensors_plus: ^7.0.0
+  flutter_background_service: ^5.1.0
+  flutter_local_notifications: ^19.5.0
+  crypto: ^3.0.7
+  pdf: ^3.11.3
+  device_info_plus: ^12.3.0
+  url_launcher: ^6.3.2
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
