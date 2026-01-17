@@ -39,7 +39,9 @@ class PanicService {
       
       // 3. Get Location
       onStatusChange("Acquiring GPS Location...");
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
       String mapsLink = "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
 
       // 4. Start Recording

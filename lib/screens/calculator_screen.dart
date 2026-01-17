@@ -41,7 +41,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void _initShakeListener() {
-    _accelerometerSubscription = userAccelerometerEvents.listen((UserAccelerometerEvent event) {
+    _accelerometerSubscription = userAccelerometerEventStream().listen((UserAccelerometerEvent event) {
       if (_isCountdownActive) return;
 
       double acceleration = (event.x.abs() + event.y.abs() + event.z.abs());
@@ -261,7 +261,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             Column(
               children: [
                 Row(children: [
-                   _buildButton('C', color: Colors.red.withOpacity(0.2), textColor: Colors.redAccent),
+                   _buildButton('C', color: Colors.red.withValues(alpha: 0.2), textColor: Colors.redAccent),
                    _buildButton('(', color: const Color(0xFF0F172A)),
                    _buildButton(')', color: const Color(0xFF0F172A)),
                    _buildButton('÷', color: const Color(0xFF00E5FF), textColor: Colors.black),

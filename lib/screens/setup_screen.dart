@@ -120,7 +120,7 @@ class _SetupScreenState extends State<SetupScreen> {
                   ),
                 Row(
                   children: [
-                    Expanded(child: SizedBox()), // Placeholder for alignment
+                    const Expanded(child: SizedBox()), // Placeholder for alignment
                     _buildKeypadButton('0', () => _onDigitPress('0')),
                      Expanded(
                       child: Padding(

@@ -270,7 +270,7 @@ class _VaultScreenState extends State<VaultScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: (_isRecording ? Colors.grey : const Color(0xFFFF007A)).withOpacity(0.5),
+                          color: (_isRecording ? Colors.grey : const Color(0xFFFF007A)).withValues(alpha: 0.5),
                           blurRadius: 20,
                           spreadRadius: 5,
                         )

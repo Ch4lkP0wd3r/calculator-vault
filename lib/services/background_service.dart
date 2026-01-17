@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:calculator_vault/services/panic_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class BackgroundServiceHelper {
   static const String notificationChannelId = 'safehouse_foreground';
@@ -58,7 +55,7 @@ class BackgroundServiceHelper {
     });
 
     // 2. Accelerometer Logic
-    accelerometerSub = userAccelerometerEvents.listen((UserAccelerometerEvent event) async {
+    accelerometerSub = userAccelerometerEventStream().listen((UserAccelerometerEvent event) async {
        if (isPanicActive) return;
 
        double acceleration = (event.x.abs() + event.y.abs() + event.z.abs());
