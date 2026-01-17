@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sensors_plus/sensors_plus.dart'; 
+import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:async';
 import 'package:calculator_vault/services/panic_service.dart';
-import 'vault_screen.dart';
+import 'package:calculator_vault/screens/vault_screen.dart';
+import 'package:calculator_vault/screens/dummy_vault_screen.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -14,17 +15,116 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
-import 'package:calculator_vault/screens/dummy_vault_screen.dart'; // Import Dummy Vault
-
-// ...
-
   String _expression = '';
   String _result = '0';
   String? _secretCode;
   String? _sosCode;
-  String? _dummyCode; // New State
+  String? _dummyCode;
   
-  // ...
+  // Shake / Panic Related
+  final PanicService _panicService = PanicService();
+  StreamSubscription? _accelerometerSubscription;
+  bool _isCountdownActive = false;
+  DateTime _lastShakeTime = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSecrets();
+    _initShakeListener();
+  }
+
+  @override
+  void dispose() {
+    _accelerometerSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _initShakeListener() {
+    _accelerometerSubscription = userAccelerometerEvents.listen((UserAccelerometerEvent event) {
+      if (_isCountdownActive) return;
+
+      double acceleration = (event.x.abs() + event.y.abs() + event.z.abs());
+      if (acceleration > 15) {
+        final now = DateTime.now();
+        if (now.difference(_lastShakeTime).inSeconds > 1) {
+          _lastShakeTime = now;
+          _showPanicCountdown();
+        }
+      }
+    });
+  }
+
+  void _showPanicCountdown() {
+    setState(() => _isCountdownActive = true);
+    
+    int countdown = 5;
+    Timer? timer;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            timer ??= Timer.periodic(const Duration(seconds: 1), (t) {
+              if (countdown > 1) {
+                setStateDialog(() => countdown--);
+              } else {
+                t.cancel();
+                Navigator.of(context).pop(true);
+              }
+            });
+
+            return AlertDialog(
+              backgroundColor: Colors.red[900],
+              title: const Text("SOS ALERT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text("Shake Detected! Initiating Panic Mode in:", style: TextStyle(color: Colors.white70)),
+                  const SizedBox(height: 20),
+                  Text("$countdown", style: const TextStyle(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              actions: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+                    onPressed: () {
+                      timer?.cancel();
+                      Navigator.of(context).pop(false);
+                    },
+                    child: const Text("CANCEL", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  ),
+                )
+              ],
+            );
+          },
+        );
+      },
+    ).then((shouldProceed) {
+      setState(() => _isCountdownActive = false);
+      if (shouldProceed == true) {
+        _triggerPanic();
+      }
+    });
+  }
+
+  Future<void> _triggerPanic() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Panic Mode Activated! Recording..."), backgroundColor: Colors.red),
+    );
+    
+    await _panicService.triggerPanic(
+      context: context,
+      onStatusChange: (msg) {
+        print("Panic Status: $msg");
+      },
+      onRecordingStateChange: (isActive) {},
+    );
+  }
 
   void _loadSecrets() async {
     final prefs = await SharedPreferences.getInstance();
@@ -35,14 +135,29 @@ import 'package:calculator_vault/screens/dummy_vault_screen.dart'; // Import Dum
     });
   }
 
-  // ...
+  void _onPressed(String text) {
+    setState(() {
+      if (text == 'C') {
+        _expression = '';
+        _result = '0';
+      } else if (text == '=') {
+        _checkSecretAndSolve();
+      } else if (text == '⌫') {
+        if (_expression.isNotEmpty) {
+          _expression = _expression.substring(0, _expression.length - 1);
+        }
+      } else {
+        _expression += text;
+      }
+    });
+  }
 
   void _checkSecretAndSolve() {
     // 1. Check for Instant SOS
     if (_sosCode != null && _expression == _sosCode) {
        _expression = '';
        _result = 'SOS TRIGGERED';
-       _triggerPanic(); // Instant trigger (No countdown)
+       _triggerPanic();
        return;
     }
 
@@ -71,7 +186,6 @@ import 'package:calculator_vault/screens/dummy_vault_screen.dart'; // Import Dum
       
       setState(() {
         _result = eval.toString();
-        // Remove .0 for integers
         if (_result.endsWith('.0')) {
           _result = _result.substring(0, _result.length - 2);
         }
@@ -122,7 +236,6 @@ import 'package:calculator_vault/screens/dummy_vault_screen.dart'; // Import Dum
       body: SafeArea(
         child: Column(
           children: [
-            // Display Area
             Expanded(
               child: Container(
                 alignment: Alignment.bottomRight,
@@ -145,7 +258,6 @@ import 'package:calculator_vault/screens/dummy_vault_screen.dart'; // Import Dum
               ),
             ),
             const Divider(color: Colors.grey),
-            // Buttons
             Column(
               children: [
                 Row(children: [

@@ -1,4 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:calculator_vault/services/panic_service.dart';
 import 'package:calculator_vault/services/background_service.dart';
 
 class VaultScreen extends StatefulWidget {
@@ -14,13 +18,7 @@ class _VaultScreenState extends State<VaultScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final PanicService _panicService = PanicService();
   
-  import 'package:url_launcher/url_launcher.dart';
-
-// ... (other imports)
-
-// ...
-
-// States
+  // States
   bool _isRecording = false;
   String _statusMessage = "";
   bool _isBackgroundActive = false;
@@ -43,7 +41,50 @@ class _VaultScreenState extends State<VaultScreen> {
     });
   }
 
-  // ... (sos code methods) ...
+  Future<void> _setSosCode() async {
+    String input = "";
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text("Set Instant SOS Code", style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Entering this code in the calculator will INSTANTLY trigger Panic Mode (No countdown).",
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: "Enter Code (e.g. 999)",
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
+              onChanged: (v) => input = v,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+               if(input.isNotEmpty) {
+                 final prefs = await SharedPreferences.getInstance();
+                 await prefs.setString('sos_code', input);
+                 setState(() => _sosCode = input);
+                 if(mounted) Navigator.pop(context);
+               }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _setDummyCode() async {
     String input = "";
@@ -90,7 +131,9 @@ class _VaultScreenState extends State<VaultScreen> {
   Future<void> _launchI4C() async {
     final Uri url = Uri.parse('https://cybercrime.gov.in');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not launch 1930 Portal")));
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not launch 1930 Portal")));
+      }
     }
   }
 
@@ -111,7 +154,6 @@ class _VaultScreenState extends State<VaultScreen> {
     setState(() => _isBackgroundActive = value);
   }
 
-  // --- Contacts Management ---
   Future<void> _loadContacts() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -132,7 +174,7 @@ class _VaultScreenState extends State<VaultScreen> {
     
     _nameController.clear();
     _phoneController.clear();
-    if(mounted) Navigator.pop(context); // Close dialog
+    if(mounted) Navigator.pop(context);
   }
 
   Future<void> _removeContact(int index) async {
@@ -180,7 +222,6 @@ class _VaultScreenState extends State<VaultScreen> {
     );
   }
 
-  // --- Panic Logic ---
   Future<void> _triggerPanic() async {
     await _panicService.triggerPanic(
       context: context,
@@ -210,7 +251,6 @@ class _VaultScreenState extends State<VaultScreen> {
       ),
       body: Column(
         children: [
-          // Panic Status / Button
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -251,7 +291,6 @@ class _VaultScreenState extends State<VaultScreen> {
           
           const Divider(color: Colors.grey),
 
-          // Background Protection Toggle
           SwitchListTile(
             title: const Text("Background Protection", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             subtitle: const Text("Shake to Panic even when app is closed", style: TextStyle(color: Colors.grey, fontSize: 12)),
@@ -262,7 +301,6 @@ class _VaultScreenState extends State<VaultScreen> {
 
           const Divider(color: Colors.grey),
           
-          // SOS Code Setting
           ListTile(
             leading: const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
             title: const Text("Instant SOS Code", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -273,7 +311,6 @@ class _VaultScreenState extends State<VaultScreen> {
           
           const Divider(color: Colors.grey),
 
-          // Dummt Vault Setting
           ListTile(
             leading: const Icon(Icons.theater_comedy, color: Colors.blueGrey),
             title: const Text("Set Decoy Vault Code", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -284,7 +321,6 @@ class _VaultScreenState extends State<VaultScreen> {
 
           const Divider(color: Colors.grey),
 
-          // I4C Link
           ListTile(
             leading: const Icon(Icons.gavel, color: Colors.cyanAccent),
             title: const Text("Report to I4C (1930)", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -295,7 +331,6 @@ class _VaultScreenState extends State<VaultScreen> {
           
           const Divider(color: Colors.grey),
           
-          // Contacts List
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Align(
