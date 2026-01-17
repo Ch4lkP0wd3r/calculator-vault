@@ -14,7 +14,7 @@ dependencies:
   # Core Features
   shared_preferences: ^2.2.2
   geolocator: ^13.0.1
-  record: ^5.1.0
+  record: 5.1.0
   share_plus: ^10.0.0
   path_provider: ^2.1.2
   permission_handler: ^11.3.0
