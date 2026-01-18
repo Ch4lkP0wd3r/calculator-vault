@@ -119,8 +119,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     
     await _panicService.triggerPanic(
       context: context,
-      onStatusChange: (msg) {
-        print("Panic Status: $msg");
+      onStatusChange: (status) {
+        debugPrint("Panic Status: $status");
       },
       onRecordingStateChange: (isActive) {},
     );

@@ -41,7 +41,7 @@ class ForensicService {
 
     // 2. Timestamp
     final now = DateTime.now().toUtc();
-    final String timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(now) + " UTC";
+    final String timestamp = "${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)} UTC";
 
     // 3. Build PDF Content
     pdf.addPage(
