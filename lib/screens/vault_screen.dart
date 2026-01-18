@@ -74,8 +74,9 @@ class _VaultScreenState extends State<VaultScreen> {
                if(input.isNotEmpty) {
                  final prefs = await SharedPreferences.getInstance();
                  await prefs.setString('sos_code', input);
+                 if (!context.mounted) return;
                  setState(() => _sosCode = input);
-                 if(mounted) Navigator.pop(context);
+                 Navigator.pop(context);
                }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
@@ -116,8 +117,9 @@ class _VaultScreenState extends State<VaultScreen> {
                if(input.isNotEmpty) {
                  final prefs = await SharedPreferences.getInstance();
                  await prefs.setString('dummy_code', input);
+                 if (!context.mounted) return;
                  setState(() => _dummyCode = input);
-                 if(mounted) Navigator.pop(context);
+                 Navigator.pop(context);
                }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
